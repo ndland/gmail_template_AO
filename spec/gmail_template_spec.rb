@@ -8,6 +8,25 @@ describe GmailTemplate do
     @date = "2013-09-01 5:00pm"
   end
 
+  describe "#start" do
+
+    it "calls the construct_draft function" do
+      subject.should_receive(:construct_draft)
+      subject.start
+    end
+  end
+
+  describe "#construct_draft" do
+
+    it "calls the set_draft_attributes function" do
+      subject.stub(:gets) { @email }
+      subject.stub(:gets) { @name }
+      subject.stub(:gets) { @date }
+      subject.should_receive(:set_draft_attributes)
+      subject.construct_draft
+    end
+  end
+
   describe "#user_io" do
 
     it "prompts the user for an email address to send the email to" do
@@ -48,23 +67,48 @@ describe GmailTemplate do
   end
 
   describe "#set_draft_attributes" do
+    before do
+      subject.stub(:user_io).with("What is the email address you'd like to send it to?").and_return(@email)
+      subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
+      subject.stub(:user_io).with("What is the name of the candidate?").and_return(@name)
+    end
 
     it "calls the user_io function to set the email" do
-      subject.stub(:gets) { @email }
-      subject.should_receive(:user_io).exactly(3).and_return(@email)
+      subject.should_receive(:user_io).with("What is the email address you'd like to send it to?").and_return(@email)
       subject.set_draft_attributes
     end
 
-    it "calls the user_io function to set the name" do
-      subject.stub(:gets) { @name }
-      subject.should_receive(:user_io).exactly(3).and_return(@name)
+    it "calls the user_io function to set the date" do
+      subject.should_receive(:user_io).with("What date would you like to send this email on?").and_return(@date)
       subject.set_draft_attributes
     end
 
     it "calls the user_io function to set the date and time" do
-      subject.stub(:gets) { @date }
-      subject.should_receive(:user_io).exactly(3).and_return(@date)
+      subject.should_receive(:user_io).with("What is the name of the candidate?").and_return(@name)
       subject.set_draft_attributes
+    end
+
+    it "calls the set_deadline function" do
+      subject.should_receive(:set_deadline)
+      subject.set_draft_attributes
+    end
+  end
+
+  describe "#set_deadline" do
+
+    it "sets the deadline based on what date was passed into the function" do
+      subject.stub(:gets) { @date }
+      subject.set_deadline('2013-09-01 5:00pm').should == '8am EDT Wednesday Morning, September 4th'
+    end
+
+    it "sets the deadline based on what date was passed into the function" do
+      subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
+      subject.set_deadline('2013-08-01 1:00pm').should == '4am EDT Sunday Morning, August 4th'
+    end
+
+    it "sets the deadline based on what date was passed into the function" do
+      subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
+      subject.set_deadline('2013-08-29 5:00pm').should == '8am EDT Sunday Morning, September 1st'
     end
   end
 
