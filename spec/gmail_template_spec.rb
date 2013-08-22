@@ -10,7 +10,7 @@ describe GmailTemplate do
     @deadline = " 8am EDT Wednesday Morning, September 4th"
     @body = "hi #{@name}!
 
-Complete the problem presented in this...your resulting project to us at detroit.jobs@atomicobject.com by#{@deadline}
+Complete the problem presented in this...your resulting project to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}
 blah blah blah
 
 Thanks!"
@@ -152,6 +152,15 @@ Thanks!"
   end
 
   describe "#save_draft" do
+    before do
+      Mail.defaults do
+        retriever_method :imap, :address    => 'imap.gmail.com',
+                                :port       => 993,
+                                :user_name  => 'test@atomicobject.com',
+                                :password   => 'Ees5iShu',
+                                :enable_ssl => true
+      end
+    end
 
     it "calls the logging_in method" do
       subject.should_receive(:logging_in)
@@ -179,6 +188,15 @@ Thanks!"
       subject.imap = double("imap", :append => "true")
       subject.start
     end
+
+    # it 'has an html part to the email' do
+    #   subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
+    #   subject.stub(:ask).and_return(@password)
+    #   subject.start
+    #   drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").first
+    #   p drafts.parts.map{ |p| p.content_type}
+    #   p drafts.parts[0].content_type.should include('text/html')
+    # end
   end
 
   describe "#logging_in" do
@@ -192,13 +210,6 @@ Thanks!"
     it "asks for a password" do
       subject.stub(:user_io).and_return(@email)
       subject.should_receive(:ask).with("What is your google password?\n").and_return(@password)
-      subject.logging_in()
-    end
-
-    it "masks the google password for added security when prompted" do
-      subject.stub(:user_io).with("What is your google username?").and_return(@email)
-      subject.stub(:ask).and_return(@password)
-      STDIN.should == "********"
       subject.logging_in()
     end
 

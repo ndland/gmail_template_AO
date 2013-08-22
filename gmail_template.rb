@@ -1,6 +1,7 @@
 require 'net/imap'
 require 'time'
 require 'highline/import'
+require 'mail'
 
 class GmailTemplate
   attr_accessor :body, :imap
@@ -36,19 +37,23 @@ class GmailTemplate
     set_draft_attributes()
     @body = "hi #{@name}!
 
-Complete the problem presented in this...your resulting project to us at <a href ='mailto: detroit.jobs@atomicobject.com'>detroit.jobs@atomicobject.com</a> by #{@deadline}
+Complete the problem presented in this...your resulting project to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
 blah blah blah
 
 Thanks!"
   end
 
   def save_draft
+    new_body = @body.gsub(/\n/,'<br>')
     logging_in()
-    @imap.append("[Gmail]/Drafts", <<EOF, [:Draft], Time.now)
-     TO: #{@email}
-
-#{@body}
-EOF
+    mail = Mail.new do
+      to @email
+      html_part do
+        content_type 'text/html; charset=UTF-8'
+        body new_body
+      end
+    end
+    @imap.append("[Gmail]/Drafts", mail.to_s, [:Draft], Time.now)
 
   puts "Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}"
   end
