@@ -8,15 +8,22 @@ describe GmailTemplate do
     @name = "Test"
     @date = "2013-09-01 5:00pm"
     @deadline = " 8am EDT Wednesday Morning, September 4th"
-    @body = "hi #{@name}! \nComplete the problem presented in this...your resulting project to us at detroit.jobs@atomicobject.com by#{@deadline} \n blah blah blah \n Thanks!"
+    @body = "hi #{@name}!
+
+Complete the problem presented in this...your resulting project to us at detroit.jobs@atomicobject.com by#{@deadline}
+blah blah blah
+
+Thanks!"
   end
 
   describe "#start" do
-
-    it "calls the construct_draft function" do
+    before do
       subject.stub(:user_io).with("What is the email address you'd like to send it to?").and_return(@email)
       subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
       subject.stub(:user_io).with("What is the name of the candidate?").and_return(@name)
+    end
+
+    it "calls the construct_draft function" do
       subject.stub(:user_io).and_return('Y')
       subject.should_receive(:construct_draft).at_least(1).times
       subject.stub(:save_draft)
@@ -24,27 +31,18 @@ describe GmailTemplate do
     end
 
     it "calls user_io to see if draft is ok" do
-      subject.stub(:user_io).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
-      subject.stub(:user_io).with("What is the name of the candidate?").and_return(@name)
       subject.stub(:save_draft)
       subject.should_receive(:user_io).with("#{@body}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
       subject.start
     end
 
     it "calls save_draft if draft was ok" do
-      subject.stub(:user_io).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
-      subject.stub(:user_io).with("What is the name of the candidate?").and_return(@name)
       subject.stub(:user_io).with("#{@body}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
       subject.should_receive(:save_draft)
       subject.start
     end
 
     it "calls construct_draft if draft was not ok" do
-      subject.stub(:user_io).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
-      subject.stub(:user_io).with("What is the name of the candidate?").and_return(@name)
       subject.stub(:user_io).and_return('N', 'Y')
       subject.stub(:save_draft)
       subject.should_receive(:construct_draft).twice
@@ -105,13 +103,6 @@ describe GmailTemplate do
       STDOUT.should_receive(:puts).with("What date would you like to send this email on?")
       subject.user_io("What date would you like to send this email on?").should == @date
     end
-
-    it "masks the google password for added security when prompted" do
-    p "say something"
-    system("stty", "-echo")
-    gets.chomp
-    system("stty", "echo")
-    end
   end
 
   describe "#set_draft_attributes" do
@@ -164,17 +155,19 @@ describe GmailTemplate do
 
     it "calls the logging_in method" do
       subject.should_receive(:logging_in)
-      subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email)
+      subject.stub(:ask).and_return(@password)
       subject.imap = double("imap", :append => "true")
       subject.start
     end
 
     it "sends the draft to gmail" do
-      subject.stub(:user_io).and_return(@email, @password)
+      subject.stub(:user_io).and_return(@email)
+      subject.stub(:ask).and_return(@password)
       subject.logging_in()
       subject.imap.select("[Gmail]/Drafts")
       draft_count = subject.imap.status("[Gmail]/Drafts", ["MESSAGES"])
-      subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email)
       subject.start
       subject.imap.status("[Gmail]/Drafts", ["MESSAGES"]).should_not eq(draft_count)
     end
@@ -182,6 +175,7 @@ describe GmailTemplate do
     it "prints out that it was saved and prints out the send date" do
       STDOUT.should_receive(:puts).with("Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}")
       subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@password)
       subject.imap = double("imap", :append => "true")
       subject.start
     end
@@ -190,32 +184,41 @@ describe GmailTemplate do
   describe "#logging_in" do
 
     it "asks for a username" do
-      subject.stub(:user_io).and_return(@password)
+      subject.stub(:ask).and_return(@password)
       subject.should_receive(:user_io).with("What is your google username?").and_return(@email)
       subject.logging_in()
     end
 
     it "asks for a password" do
       subject.stub(:user_io).and_return(@email)
-      subject.should_receive(:user_io).with("What is your google password?").and_return(@password)
+      subject.should_receive(:ask).with("What is your google password?\n").and_return(@password)
+      subject.logging_in()
+    end
+
+    it "masks the google password for added security when prompted" do
+      subject.stub(:user_io).with("What is your google username?").and_return(@email)
+      subject.stub(:ask).and_return(@password)
+      STDIN.should == "********"
       subject.logging_in()
     end
 
     it "it defines imap" do
-      subject.stub(:user_io).and_return(@email, @password)
+      subject.stub(:user_io).and_return(@email)
+      subject.stub(:ask).and_return(@password)
       subject.logging_in()
       subject.imap.should be
     end
 
     it "it logs the use into google" do
-      subject.stub(:user_io).and_return(@email, @password)
+      subject.stub(:user_io).and_return(@email)
+      subject.stub(:ask).and_return(@password)
       subject.logging_in()
       subject.imap.select("[Gmail]/Drafts")
     end
 
     it "calls logging_in again if the credentials are not correct" do
       subject.stub(:user_io).with("What is your google username?").and_return("skjhf", @email)
-      subject.stub(:user_io).with("What is your google password?").and_return(@password)
+      subject.stub(:ask).with("What is your google password?\n").and_return(@password)
       subject.logging_in()
       subject.imap.select("[Gmail]/Drafts")
     end

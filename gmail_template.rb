@@ -1,5 +1,6 @@
 require 'net/imap'
 require 'time'
+require 'highline/import'
 
 class GmailTemplate
   attr_accessor :body, :imap
@@ -33,7 +34,12 @@ class GmailTemplate
 
   def construct_draft
     set_draft_attributes()
-    @body = "hi #{@name}! \nComplete the problem presented in this...your resulting project to us at detroit.jobs@atomicobject.com by #{@deadline} \n blah blah blah \n Thanks!"
+    @body = "hi #{@name}!
+
+Complete the problem presented in this...your resulting project to us at <a href ='mailto: detroit.jobs@atomicobject.com'>detroit.jobs@atomicobject.com</a> by #{@deadline}
+blah blah blah
+
+Thanks!"
   end
 
   def save_draft
@@ -41,7 +47,7 @@ class GmailTemplate
     @imap.append("[Gmail]/Drafts", <<EOF, [:Draft], Time.now)
      TO: #{@email}
 
-     #{@body}
+#{@body}
 EOF
 
   puts "Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}"
@@ -49,9 +55,7 @@ EOF
 
   def logging_in()
     email = user_io("What is your google username?")
-    system("stty", "-echo")
-    password = user_io("What is your google password?")
-    system("stty", "echo")
+    password = ask("What is your google password?\n") { |input| input.echo = "*" }
     @imap = Net::IMAP.new('imap.gmail.com', 993, true, nil, false)
     @imap.login(email, password)
   rescue Net::IMAP::NoResponseError
@@ -74,5 +78,5 @@ class Fixnum
   end
 end
 
-application = GmailTemplate.new
-application.start
+#application = GmailTemplate.new
+#application.start
