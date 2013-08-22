@@ -189,14 +189,21 @@ Thanks!"
       subject.start
     end
 
-    # it 'has an html part to the email' do
-    #   subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
-    #   subject.stub(:ask).and_return(@password)
-    #   subject.start
-    #   drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").first
-    #   p drafts.parts.map{ |p| p.content_type}
-    #   p drafts.parts[0].content_type.should include('text/html')
-    # end
+    it 'has the correct email address' do
+      subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@password)
+      subject.start
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
+      drafts.to.should include(@email)
+    end
+
+    it 'inserts <br> instead of /n' do
+      subject.stub(:user_io).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@password)
+      subject.start
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
+      drafts.body.decoded.should include("hi #{@name}!<br><br>Complete the problem presented in this...your resulting project to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}<br>blah blah blah<br><br>Thanks!")
+    end
   end
 
   describe "#logging_in" do

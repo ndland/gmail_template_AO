@@ -15,6 +15,7 @@ class GmailTemplate
    save_draft()
   end
 
+  # TODO refactor to use Highline?
   def user_io(output)
     puts output
     gets.chomp
@@ -30,14 +31,14 @@ class GmailTemplate
   def set_deadline(date)
     hours, minutes, seconds = 63, 60, 60
     deadline = Time.parse(date) + (hours * minutes * seconds)
-    deadline.strftime("%-I%P " + deadline.zone + " %A Morning, %B #{deadline.day.ordinalize}")
+    deadline.strftime("%-I:%M%P " + deadline.zone + " %A Morning, %B #{deadline.day.ordinalize}")
   end
 
   def construct_draft
     set_draft_attributes()
     @body = "hi #{@name}!
 
-Complete the problem presented in this...your resulting project to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
 blah blah blah
 
 Thanks!"
@@ -45,9 +46,10 @@ Thanks!"
 
   def save_draft
     new_body = @body.gsub(/\n/,'<br>')
+    email = @email
     logging_in()
     mail = Mail.new do
-      to @email
+      to email
       html_part do
         content_type 'text/html; charset=UTF-8'
         body new_body
@@ -68,6 +70,7 @@ Thanks!"
   end
 end
 
+# TODO find tests for this function
 class Fixnum
   def ordinalize
     if (11..13).include?(self % 100)
@@ -83,5 +86,5 @@ class Fixnum
   end
 end
 
-#application = GmailTemplate.new
-#application.start
+application = GmailTemplate.new
+application.start
