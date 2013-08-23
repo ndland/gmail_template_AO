@@ -7,10 +7,10 @@ describe GmailTemplate do
     @password = 'Ees5iShu'
     @name = "Test"
     @date = "2013-09-01 5:00pm"
-    @deadline = " 8am EDT Wednesday Morning, September 4th"
+    @deadline = " 8:00am EDT Wednesday Morning, September 4th"
     @body = "hi #{@name}!
 
-Complete the problem presented in this...your resulting project to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}
 blah blah blah
 
 Thanks!"
@@ -137,17 +137,17 @@ Thanks!"
 
     it "sets the deadline based on what date was passed into the function" do
       subject.stub(:gets) { @date }
-      subject.set_deadline('2013-09-01 5:00pm').should == '8am EDT Wednesday Morning, September 4th'
+      subject.set_deadline('2013-09-01 5:00pm').should == '8:00am EDT Wednesday Morning, September 4th'
     end
 
     it "sets the deadline based on what date was passed into the function" do
       subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
-      subject.set_deadline('2013-08-01 1:00pm').should == '4am EDT Sunday Morning, August 4th'
+      subject.set_deadline('2013-08-01 1:00pm').should == '4:00am EDT Sunday Morning, August 4th'
     end
 
     it "sets the deadline based on what date was passed into the function" do
       subject.stub(:user_io).with("What date would you like to send this email on?").and_return(@date)
-      subject.set_deadline('2013-08-29 5:00pm').should == '8am EDT Sunday Morning, September 1st'
+      subject.set_deadline('2013-08-29 5:00pm').should == '8:00am EDT Sunday Morning, September 1st'
     end
   end
 
@@ -202,7 +202,7 @@ Thanks!"
       subject.stub(:ask).and_return(@password)
       subject.start
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
-      drafts.body.decoded.should include("hi #{@name}!<br><br>Complete the problem presented in this...your resulting project to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}<br>blah blah blah<br><br>Thanks!")
+      drafts.body.decoded.should include("hi #{@name}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}<br>blah blah blah<br><br>Thanks!")
     end
   end
 

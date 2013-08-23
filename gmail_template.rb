@@ -86,5 +86,5 @@ class Fixnum
   end
 end
 
-application = GmailTemplate.new
-application.start
+# application = GmailTemplate.new
+# application.start
