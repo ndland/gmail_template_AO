@@ -10,21 +10,15 @@ class GmailTemplate
     decision = 'n'
     until decision.upcase == 'Y'
     construct_draft()
-    decision = user_io("#{@body}\n\n Okay to send to Gmail as a draft? Y/N")
+    decision = ask("#{@body}\n\n Okay to send to Gmail as a draft? Y/N")
     end
    save_draft()
   end
 
-  # TODO refactor to use Highline?
-  def user_io(output)
-    puts output
-    gets.chomp
-  end
-
   def set_draft_attributes
-    @email = user_io("What is the email address you'd like to send it to?")
-    @date = user_io("What date would you like to send this email on?")
-    @name = user_io("What is the name of the candidate?")
+    @email = ask("What is the email address you'd like to send it to?")
+    @date = ask("What date would you like to send this email on?")
+    @name = ask("What is the name of the candidate?")
     @deadline = set_deadline(@date)
   end
 
@@ -61,7 +55,7 @@ Thanks!"
   end
 
   def logging_in()
-    email = user_io("What is your google username?")
+    email = ask("What is your google username?")
     password = ask("What is your google password?\n") { |input| input.echo = "*" }
     @imap = Net::IMAP.new('imap.gmail.com', 993, true, nil, false)
     @imap.login(email, password)
