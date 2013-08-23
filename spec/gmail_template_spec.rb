@@ -195,4 +195,24 @@ Thanks!"
       subject.imap.select("[Gmail]/Drafts")
     end
   end
+
+  describe "ordinalize" do
+
+    it "returns 1st when it recieves 1" do
+      1.ordinalize.should eq('1st')
+    end
+
+    it "returns 2nd when it recieves 2" do
+      2.ordinalize.should eq('2nd')
+    end
+
+    it "returns 33rd when it recieves 33" do
+      33.ordinalize.should eq('33rd')
+    end
+
+    it "returns 12th when it recieves 12" do
+      12.ordinalize.should eq('12th')
+    end
+  end
 end
+
