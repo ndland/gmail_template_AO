@@ -6,10 +6,11 @@ require 'mail'
 class GmailTemplate
   attr_accessor :body, :imap
 
-  def start
+  def start(body)
     decision = 'n'
     until decision.upcase == 'Y'
     construct_draft()
+    @body = eval('"' + body + '"')
     decision = ask("#{@body}\n\n Okay to send to Gmail as a draft? Y/N")
     end
    save_draft()
@@ -30,15 +31,11 @@ class GmailTemplate
 
   def construct_draft
     set_draft_attributes()
-    @body = "hi #{@name}!
-
-Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
-blah blah blah
-
-Thanks!"
   end
 
   def save_draft
+   files = []
+    # files = ['./spec/spec_helper.rb']
     new_body = @body.gsub(/\n/,'<br>')
     email = @email
     logging_in()
@@ -48,6 +45,9 @@ Thanks!"
         content_type 'text/html; charset=UTF-8'
         body new_body
       end
+    end
+    files.each do |file|
+      mail.add_file(file)
     end
     @imap.append("[Gmail]/Drafts", mail.to_s, [:Draft], Time.now)
 
@@ -64,7 +64,6 @@ Thanks!"
   end
 end
 
-# TODO find tests for this function
 class Fixnum
   def ordinalize
     if (11..13).include?(self % 100)

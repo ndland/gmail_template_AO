@@ -5,54 +5,60 @@ describe GmailTemplate do
   before do
     @email = "test@atomicobject.com"
     @password = 'Ees5iShu'
-    @name = "Test"
+    @name_spec = "Test"
     @date = "2013-09-01 5:00pm"
-    @deadline = " 8:00am EDT Wednesday Morning, September 4th"
-    @body = "hi #{@name}!
+    @deadline_spec = " 8:00am EDT Wednesday Morning, September 4th"
+    @body_spec = "hi #{@name_spec}!
 
-Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}
 blah blah blah
 
 Thanks!"
+    @body = 'hi #{@name}!
+
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
+blah blah blah
+
+Thanks!'
   end
 
   describe "#start" do
     before do
       subject.stub(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
       subject.stub(:ask).with("What date would you like to send this email on?").and_return(@date)
-      subject.stub(:ask).with("What is the name of the candidate?").and_return(@name)
+      subject.stub(:ask).with("What is the name of the candidate?").and_return(@name_spec)
     end
 
     it "calls the construct_draft function" do
       subject.stub(:ask).and_return('Y')
       subject.should_receive(:construct_draft).at_least(1).times
       subject.stub(:save_draft)
-      subject.start
+      subject.start(@body)
     end
 
     it "calls ask to see if draft is ok" do
       subject.stub(:save_draft)
-      subject.should_receive(:ask).with("#{@body}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
-      subject.start
+      subject.should_receive(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
+      subject.start(@body)
     end
 
     it "calls save_draft if draft was ok" do
-      subject.stub(:ask).with("#{@body}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
+      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
       subject.should_receive(:save_draft)
-      subject.start
+      subject.start(@body)
     end
 
     it "calls construct_draft if draft was not ok" do
       subject.stub(:ask).and_return('N', 'Y')
       subject.stub(:save_draft)
       subject.should_receive(:construct_draft).twice
-      subject.start
+      subject.start(@body)
     end
   end
 
   describe "#construct_draft" do
     before do
-      subject.stub(:ask).and_return(@email, @date, @name)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y')
     end
 
     it "calls the set_draft_attributes function" do
@@ -61,8 +67,9 @@ Thanks!"
     end
 
     it "constructs the body" do
-      subject.construct_draft
-      subject.body.should eq(@body)
+      subject.stub(:save_draft)
+      subject.start(@body)
+      subject.body.should eq(@body_spec)
     end
   end
 
@@ -70,7 +77,7 @@ Thanks!"
     before do
       subject.stub(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
       subject.stub(:ask).with("What date would you like to send this email on?").and_return(@date)
-      subject.stub(:ask).with("What is the name of the candidate?").and_return(@name)
+      subject.stub(:ask).with("What is the name of the candidate?").and_return(@name_spec)
     end
 
     it "calls the ask function to set the email" do
@@ -84,7 +91,7 @@ Thanks!"
     end
 
     it "calls the ask function to set the date and time" do
-      subject.should_receive(:ask).with("What is the name of the candidate?").and_return(@name)
+      subject.should_receive(:ask).with("What is the name of the candidate?").and_return(@name_spec)
       subject.set_draft_attributes
     end
 
@@ -125,9 +132,9 @@ Thanks!"
 
     it "calls the logging_in method" do
       subject.should_receive(:logging_in)
-      subject.stub(:ask).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
       subject.imap = double("imap", :append => "true")
-      subject.start
+      subject.start(@body)
     end
 
     it "sends the draft to gmail" do
@@ -135,30 +142,30 @@ Thanks!"
       subject.logging_in()
       subject.imap.select("[Gmail]/Drafts")
       draft_count = subject.imap.status("[Gmail]/Drafts", ["MESSAGES"])
-      subject.stub(:ask).and_return(@email, @date, @name, 'Y', @email, @password)
-      subject.start
+      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
+      subject.start(@body)
       subject.imap.status("[Gmail]/Drafts", ["MESSAGES"]).should_not eq(draft_count)
     end
 
     it "prints out that it was saved and prints out the send date" do
       STDOUT.should_receive(:puts).with("Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}")
-      subject.stub(:ask).and_return(@email, @date, @name, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
       subject.imap = double("imap", :append => "true")
-      subject.start
+      subject.start(@body)
     end
 
     it 'has the correct email address' do
-      subject.stub(:ask).and_return(@email, @date, @name, 'Y', @email, @password)
-      subject.start
+      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
+      subject.start(@body)
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
       drafts.to.should include(@email)
     end
 
     it 'inserts <br> instead of /n' do
-      subject.stub(:ask).and_return(@email, @date, @name, 'Y', @email, @password)
-      subject.start
+      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
+      subject.start(@body)
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
-      drafts.body.decoded.should include("hi #{@name}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}<br>blah blah blah<br><br>Thanks!")
+      drafts.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
     end
   end
 
