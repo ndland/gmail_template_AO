@@ -7,69 +7,39 @@ describe GmailTemplate do
     @password = 'Ees5iShu'
     @name_spec = "Test"
     @date = "2013-09-01 5:00pm"
-    @deadline_spec = " 8:00am EDT Wednesday Morning, September 4th"
+    @deadline_spec = "8:00am EDT Wednesday Morning, September 4th"
     @body_spec = "hi #{@name_spec}!
 
 Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}
 blah blah blah
 
 Thanks!"
-    @body = 'hi #{@name}!
-
-Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
-blah blah blah
-
-Thanks!'
   end
 
-  describe "#start" do
-    before do
-      subject.stub(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.stub(:ask).with("What date would you like to send this email on?").and_return(@date)
-      subject.stub(:ask).with("What is the name of the candidate?").and_return(@name_spec)
-    end
-
-    it "calls the construct_draft function" do
-      subject.stub(:ask).and_return('Y')
-      subject.should_receive(:construct_draft).at_least(1).times
-      subject.stub(:save_draft)
-      subject.start(@body)
-    end
-
+  describe "#approval" do
     it "calls ask to see if draft is ok" do
       subject.stub(:save_draft)
-      subject.should_receive(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
-      subject.start(@body)
+      subject.should_receive(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('y')
+      subject.approval(@body_spec, [])
     end
 
     it "calls save_draft if draft was ok" do
       subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
       subject.should_receive(:save_draft)
-      subject.start(@body)
+      subject.approval(@body_spec, [])
     end
 
-    it "calls construct_draft if draft was not ok" do
-      subject.stub(:ask).and_return('N', 'Y')
+    it "doesn't call save draft if draft wasn't ok" do
+      subject.stub(:ask).and_return('N')
       subject.stub(:save_draft)
-      subject.should_receive(:construct_draft).twice
-      subject.start(@body)
-    end
-  end
-
-  describe "#construct_draft" do
-    before do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y')
+      subject.should_not receive(:save_draft)
+      subject.approval(@body_spec, [])
     end
 
-    it "calls the set_draft_attributes function" do
-      subject.should_receive(:set_draft_attributes)
-      subject.construct_draft
-    end
-
-    it "constructs the body" do
-      subject.stub(:save_draft)
-      subject.start(@body)
-      subject.body.should eq(@body_spec)
+    it "passes in the body and the files to save_draft"do
+      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
+      subject.should_receive(:save_draft).with(@body_spec, [])
+      subject.approval(@body_spec, [])
     end
   end
 
@@ -82,42 +52,49 @@ Thanks!'
 
     it "calls the ask function to set the email" do
       subject.should_receive(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.set_draft_attributes
+      subject.set_draft_attributes(300)
     end
-
     it "calls the ask function to set the date" do
       subject.should_receive(:ask).with("What date would you like to send this email on?").and_return(@date)
-      subject.set_draft_attributes
+      subject.set_draft_attributes(3000)
     end
 
     it "calls the ask function to set the date and time" do
       subject.should_receive(:ask).with("What is the name of the candidate?").and_return(@name_spec)
-      subject.set_draft_attributes
+      subject.set_draft_attributes(30000)
     end
 
     it "calls the set_deadline function" do
       subject.should_receive(:set_deadline)
-      subject.set_draft_attributes
+      subject.set_draft_attributes(2000)
+    end
+
+    it "returns a hash of the name and deadline" do
+      attributes = subject.set_draft_attributes(3600*63)
+      attributes['name'].should eq(@name_spec)
+      attributes['deadline'].should eq(@deadline_spec)
     end
   end
 
   describe "#set_deadline" do
 
     it "sets the deadline based on what date was passed into the function" do
-      subject.stub(:gets) { @date }
-      subject.set_deadline('2013-09-01 5:00pm').should == '8:00am EDT Wednesday Morning, September 4th'
+      subject.set_deadline('2013-09-01 5:00pm', 3600*63).should == '8:00am EDT Wednesday Morning, September 4th'
     end
 
     it "sets the deadline based on what date was passed into the function" do
-      subject.stub(:ask).with("What date would you like to send this email on?").and_return(@date)
-      subject.set_deadline('2013-08-01 1:00pm').should == '4:00am EDT Sunday Morning, August 4th'
+      subject.set_deadline('2013-08-01 1:00pm', 3600*63).should == '4:00am EDT Sunday Morning, August 4th'
     end
 
     it "sets the deadline based on what date was passed into the function" do
-      subject.stub(:ask).with("What date would you like to send this email on?").and_return(@date)
-      subject.set_deadline('2013-08-29 5:00pm').should == '8:00am EDT Sunday Morning, September 1st'
+      subject.set_deadline('2013-08-29 5:00pm', 3600*63).should == '8:00am EDT Sunday Morning, September 1st'
+    end
+
+    it "sets the deadline based on what timeframe  was passed into the function" do
+      subject.set_deadline('2013-08-29 5:00pm', 3600*63).should == '8:00am EDT Sunday Morning, September 1st'
     end
   end
+=begin
 
   describe "#save_draft" do
     before do
@@ -221,5 +198,6 @@ Thanks!'
       12.ordinalize.should eq('12th')
     end
   end
+=end
 end
 
