@@ -24,8 +24,7 @@ class GmailTemplate
   end
 
   def set_deadline(date, timeframe)
-    hours, minutes, seconds = 63, 60, 60
-    deadline = Time.parse(date) + (hours * minutes * seconds)
+    deadline = Time.parse(date) + timeframe
     deadline.strftime("%-I:%M%P " + deadline.zone + " %A Morning, %B #{deadline.day.ordinalize}")
   end
 

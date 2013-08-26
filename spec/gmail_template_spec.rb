@@ -90,11 +90,14 @@ Thanks!"
       subject.set_deadline('2013-08-29 5:00pm', 3600*63).should == '8:00am EDT Sunday Morning, September 1st'
     end
 
-    it "sets the deadline based on what timeframe  was passed into the function" do
-      subject.set_deadline('2013-08-29 5:00pm', 3600*63).should == '8:00am EDT Sunday Morning, September 1st'
+    it "sets the deadline based on what timeframe was passed into the function" do
+      subject.set_deadline('2013-08-29 5:00pm', 3600).should_not eq '8:00am EDT Sunday Morning, September 1st'
+    end
+
+    it "sets the deadline based on what timeframe was passed into the function" do
+      subject.set_deadline('2013-08-29 5:00pm', 36000).should eq '3:00am EDT Friday Morning, August 30th'
     end
   end
-=begin
 
   describe "#save_draft" do
     before do
@@ -109,38 +112,40 @@ Thanks!"
 
     it "calls the logging_in method" do
       subject.should_receive(:logging_in)
-      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
       subject.imap = double("imap", :append => "true")
-      subject.start(@body)
+      subject.save_draft(@body_spec, [])
     end
 
     it "sends the draft to gmail" do
-      subject.stub(:ask).and_return(@email, @password)
-      subject.logging_in()
-      subject.imap.select("[Gmail]/Drafts")
-      draft_count = subject.imap.status("[Gmail]/Drafts", ["MESSAGES"])
-      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
-      subject.start(@body)
-      subject.imap.status("[Gmail]/Drafts", ["MESSAGES"]).should_not eq(draft_count)
+      draft_count = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, [])
+      draft_count.should_not eq(Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length)
     end
 
     it "prints out that it was saved and prints out the send date" do
       STDOUT.should_receive(:puts).with("Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}")
-      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
       subject.imap = double("imap", :append => "true")
-      subject.start(@body)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, [])
     end
 
     it 'has the correct email address' do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
-      subject.start(@body)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, [])
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
       drafts.to.should include(@email)
     end
 
     it 'inserts <br> instead of /n' do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, 'Y', @email, @password)
-      subject.start(@body)
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, [])
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
       drafts.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
     end
@@ -198,6 +203,5 @@ Thanks!"
       12.ordinalize.should eq('12th')
     end
   end
-=end
 end
 
