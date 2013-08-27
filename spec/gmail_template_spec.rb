@@ -102,6 +102,10 @@ Thanks!"
       subject.set_deadline('2013-08-29 5:00pm', 36000).should eq '3:00am EDT Friday Morning, August 30th'
     end
 
+    it "sets the correct time zone" do
+      subject.set_deadline('2013-02-02 5:00pm', 3600*63).should == '8:00am EST Tuesday Morning, February 5th'
+    end
+
     it "calls time_of_day" do
       subject.should_receive(:time_of_day)
       subject.set_deadline('2013-08-29 5:00pm', 36000)
@@ -134,7 +138,7 @@ Thanks!"
       subject.time_of_day(Time.parse('2013-08-29 12:01pm')).should eq('Afternoon')
     end
   end
-=begin
+
   describe "#save_draft" do
     before do
       Mail.defaults do
@@ -244,7 +248,7 @@ Thanks!"
       subject.imap.select("[Gmail]/Drafts")
     end
   end
-=end
+
   describe "ordinalize" do
 
     it "returns 1st when it recieves 1" do

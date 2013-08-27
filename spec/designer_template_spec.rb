@@ -27,7 +27,6 @@ Thanks!"
                                 :password   => 'Ees5iShu',
                                 :enable_ssl => true
       end
-      # subject.template = double("template", :start=> "true")
     end
 
     it "creates a new instance of the GmailTemplate class" do

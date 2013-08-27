@@ -25,5 +25,5 @@ Thanks!"
   end
 end
 
-#DeveloperTemplate.new.construct_draft
-# construct_draft
+template = DeveloperTemplate.new
+template.construct_draft
