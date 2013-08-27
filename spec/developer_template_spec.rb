@@ -86,7 +86,7 @@ Thanks!"
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").length
       subject.template.stub(:ask).and_return(@email, @date, @name, 'Y', @email, @password)
       subject.construct_draft
-      drafts.should_not eq(Mail.find(:mailbox =>"[Gmail]/Drafts").length)
+      drafts.should_not eq(Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length)
     end
   end
 end
