@@ -17,7 +17,7 @@ class GmailTemplate
 
   def set_draft_attributes(timeframe)
     @email = ask("What is the email address you'd like to send it to?")
-    @date = ask("What date would you like to send this email on?")
+    @date = ask("What date would you like to send this email on? YYYY-MM-DD 12:00am\n")
     @name = ask("What is the name of the candidate?")
     @deadline = set_deadline(@date, timeframe)
     attributes = { "name" => @name, "deadline" => @deadline }
@@ -26,7 +26,18 @@ class GmailTemplate
 
   def set_deadline(date, timeframe)
     deadline = Time.parse(date) + timeframe
-    deadline.strftime("%-I:%M%P " + deadline.zone + " %A Morning, %B #{deadline.day.ordinalize}")
+    deadline.strftime("%-I:%M%P " + deadline.zone + " %A #{time_of_day(deadline)}, %B #{deadline.day.ordinalize}")
+  end
+
+  def time_of_day(time)
+    case time.hour
+    when 0...12
+      return 'Morning'
+    when 12...18
+      return 'Afternoon'
+    when 18...24
+      return 'Evening'
+    end
   end
 
   def save_draft(body, files)

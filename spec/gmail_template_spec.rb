@@ -46,8 +46,9 @@ Thanks!"
   describe "#set_draft_attributes" do
     before do
       subject.stub(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.stub(:ask).with("What date would you like to send this email on?").and_return(@date)
+      subject.stub(:ask).with("What date would you like to send this email on? YYYY-MM-DD 12:00am\n").and_return(@date)
       subject.stub(:ask).with("What is the name of the candidate?").and_return(@name_spec)
+      subject.stub(:time_of_day).and_return("Morning")
     end
 
     it "calls the ask function to set the email" do
@@ -55,7 +56,7 @@ Thanks!"
       subject.set_draft_attributes(300)
     end
     it "calls the ask function to set the date" do
-      subject.should_receive(:ask).with("What date would you like to send this email on?").and_return(@date)
+      subject.should_receive(:ask).with("What date would you like to send this email on? YYYY-MM-DD 12:00am\n").and_return(@date)
       subject.set_draft_attributes(3000)
     end
 
@@ -77,6 +78,9 @@ Thanks!"
   end
 
   describe "#set_deadline" do
+    before do
+      subject.stub(:time_of_day).and_return("Morning")
+    end
 
     it "sets the deadline based on what date was passed into the function" do
       subject.set_deadline('2013-09-01 5:00pm', 3600*63).should == '8:00am EDT Wednesday Morning, September 4th'
@@ -97,8 +101,40 @@ Thanks!"
     it "sets the deadline based on what timeframe was passed into the function" do
       subject.set_deadline('2013-08-29 5:00pm', 36000).should eq '3:00am EDT Friday Morning, August 30th'
     end
+
+    it "calls time_of_day" do
+      subject.should_receive(:time_of_day)
+      subject.set_deadline('2013-08-29 5:00pm', 36000)
+    end
+
+    it "inserts the time of day in the deadline" do
+      subject.stub(:time_of_day).and_return("Evening")
+      subject.set_deadline('2013-08-29 12:00pm', 36000).should eq '10:00pm EDT Thursday Evening, August 29th'
+    end
   end
 
+  describe "#time_of_day" do
+    it "returns morning for any time before noon" do
+      subject.time_of_day(Time.parse('2013-08-29 5:00am')).should eq('Morning')
+    end
+
+    it "returns evening for any time after 6pm" do
+      subject.time_of_day(Time.parse('2013-08-29 6:00pm')).should eq('Evening')
+    end
+
+    it "returns evening for any time between 6pm and 12am" do
+      subject.time_of_day(Time.parse('2013-08-29 11:59pm')).should eq('Evening')
+    end
+
+    it "returns afternoon for any time between noon and 6pm" do
+      subject.time_of_day(Time.parse('2013-08-29 5:59pm')).should eq('Afternoon')
+    end
+
+    it "returns afternoon for any time between noon and 6pm" do
+      subject.time_of_day(Time.parse('2013-08-29 12:01pm')).should eq('Afternoon')
+    end
+  end
+=begin
   describe "#save_draft" do
     before do
       Mail.defaults do
@@ -208,7 +244,7 @@ Thanks!"
       subject.imap.select("[Gmail]/Drafts")
     end
   end
-
+=end
   describe "ordinalize" do
 
     it "returns 1st when it recieves 1" do
