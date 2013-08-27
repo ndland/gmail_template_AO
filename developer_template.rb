@@ -6,21 +6,23 @@ class DeveloperTemplate
 
   def initialize
     @template = GmailTemplate.new
+    @approved = false
+    @files = []
+    @timeFrame = 63*3600 
   end
   
 
   def construct_draft
-  approved = false
-    until approved
-      attributes_hash = @template.set_draft_attributes(3600*63)
-      @developer_template = "hi #{attributes_hash['name']}!
+    until @approved
+      attributes_hash = @template.set_draft_attributes(@timeFrame)
+      @developer_template = "Hi #{attributes_hash['name']}!
 
-Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{attributes_hash['deadline']}
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{attributes_hash['deadline']}
 blah blah blah
 
 Thanks!"
 
-      approved = @template.approval(@developer_template, [])
+      @approved = @template.approval(@developer_template, @files)
     end
   end
 end

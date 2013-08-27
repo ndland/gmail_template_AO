@@ -13,9 +13,9 @@ describe DeveloperTemplate do
     @attributes = Hash.new
     @attributes['name'] = @name
     @attributes['deadline'] = @deadline 
-    @body = "hi #{@name}!
+    @body = "Hi #{@name}!
 
-Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
 blah blah blah
 
 Thanks!"
@@ -27,7 +27,6 @@ Thanks!"
                                 :password   => 'Ees5iShu',
                                 :enable_ssl => true
       end
-      # subject.template = double("template", :start=> "true")
     end
 
     it "creates a new instance of the GmailTemplate class" do
@@ -51,9 +50,9 @@ Thanks!"
       it "dynamically sets developer_template to equal body" do
         @name = 'adeline'
         @attributes['name'] = @name
-        @body = "hi #{@name}!
+        @body = "Hi #{@name}!
 
-Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline}
+Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
 blah blah blah
 
 Thanks!"
