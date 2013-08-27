@@ -71,7 +71,7 @@ Thanks!"
     end
 
     it "returns a hash of the name and deadline" do
-      attributes = subject.set_draft_attributes(3600*63)
+      attributes = subject.set_draft_attributes(63)
       attributes['name'].should eq(@name_spec)
       attributes['deadline'].should eq(@deadline_spec)
     end
@@ -83,27 +83,27 @@ Thanks!"
     end
 
     it "sets the deadline based on what date was passed into the function" do
-      subject.set_deadline('2013-09-01 5:00pm', 3600*63).should == '8:00am EDT Wednesday Morning, September 4th'
+      subject.set_deadline('2013-09-01 5:00pm', 63).should == '8:00am EDT Wednesday Morning, September 4th'
     end
 
     it "sets the deadline based on what date was passed into the function" do
-      subject.set_deadline('2013-08-01 1:00pm', 3600*63).should == '4:00am EDT Sunday Morning, August 4th'
+      subject.set_deadline('2013-08-01 1:00pm', 63).should == '4:00am EDT Sunday Morning, August 4th'
     end
 
     it "sets the deadline based on what date was passed into the function" do
-      subject.set_deadline('2013-08-29 5:00pm', 3600*63).should == '8:00am EDT Sunday Morning, September 1st'
+      subject.set_deadline('2013-08-29 5:00pm', 63).should == '8:00am EDT Sunday Morning, September 1st'
     end
 
     it "sets the deadline based on what timeframe was passed into the function" do
-      subject.set_deadline('2013-08-29 5:00pm', 3600).should_not eq '8:00am EDT Sunday Morning, September 1st'
+      subject.set_deadline('2013-08-29 5:00pm', 1).should_not eq '8:00am EDT Sunday Morning, September 1st'
     end
 
     it "sets the deadline based on what timeframe was passed into the function" do
-      subject.set_deadline('2013-08-29 5:00pm', 36000).should eq '3:00am EDT Friday Morning, August 30th'
+      subject.set_deadline('2013-08-29 5:00pm', 10).should eq '3:00am EDT Friday Morning, August 30th'
     end
 
     it "sets the correct time zone" do
-      subject.set_deadline('2013-02-02 5:00pm', 3600*63).should == '8:00am EST Tuesday Morning, February 5th'
+      subject.set_deadline('2013-02-02 5:00pm', 63).should == '8:00am EST Tuesday Morning, February 5th'
     end
 
     it "calls time_of_day" do
@@ -113,7 +113,7 @@ Thanks!"
 
     it "inserts the time of day in the deadline" do
       subject.stub(:time_of_day).and_return("Evening")
-      subject.set_deadline('2013-08-29 12:00pm', 36000).should eq '10:00pm EDT Thursday Evening, August 29th'
+      subject.set_deadline('2013-08-28 12:00pm', 34).should eq '10:00pm EDT Thursday Evening, August 29th'
     end
   end
 

@@ -37,7 +37,7 @@ Thanks!"
 
       it "calls gmailtemplate set_draft_attributes" do
         subject.template.stub(:approval).and_return(true)
-        subject.template.should_receive(:set_draft_attributes).with(63 * 60 * 60).and_return(@attributes)
+        subject.template.should_receive(:set_draft_attributes).with(63).and_return(@attributes)
         subject.construct_draft
       end
 

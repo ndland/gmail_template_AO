@@ -8,7 +8,7 @@ class DeveloperTemplate
     @template = GmailTemplate.new
     @approved = false
     @files = []
-    @timeFrame = 63*3600 
+    @timeFrame = 63
   end
   
 
@@ -27,5 +27,5 @@ Thanks!"
   end
 end
 
-template = DeveloperTemplate.new
-template.construct_draft
+#template = DeveloperTemplate.new
+#template.construct_draft

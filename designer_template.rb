@@ -7,7 +7,7 @@ class DesignerTemplate
     @template = GmailTemplate.new
     @approved = false
     @files = ['./spec/spec_helper.rb']
-    @timeFrame = 63*3600 
+    @timeFrame = 63
   end
 
   def construct_draft
@@ -24,5 +24,5 @@ Thanks!"
   end
 end
 
-template = DesignerTemplate.new
-template.construct_draft
+#template = DesignerTemplate.new
+#template.construct_draft
