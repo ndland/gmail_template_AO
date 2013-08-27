@@ -15,34 +15,6 @@ blah blah blah
 
 Thanks!"
   end
-
-  describe "#approval" do
-    it "calls ask to see if draft is ok" do
-      subject.stub(:save_draft)
-      subject.should_receive(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('y')
-      subject.approval(@body_spec, [])
-    end
-
-    it "calls save_draft if draft was ok" do
-      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
-      subject.should_receive(:save_draft)
-      subject.approval(@body_spec, [])
-    end
-
-    it "doesn't call save draft if draft wasn't ok" do
-      subject.stub(:ask).and_return('N')
-      subject.stub(:save_draft)
-      subject.should_not receive(:save_draft)
-      subject.approval(@body_spec, [])
-    end
-
-    it "passes in the body and the files to save_draft"do
-      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
-      subject.should_receive(:save_draft).with(@body_spec, [])
-      subject.approval(@body_spec, [])
-    end
-  end
-
   describe "#set_draft_attributes" do
     before do
       subject.stub(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
@@ -139,6 +111,156 @@ Thanks!"
     end
   end
 
+  describe "#approval" do
+    it "calls ask to see if draft is ok" do
+      subject.stub(:get_credentials_and_save_draft)
+      subject.should_receive(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('y')
+      subject.approval(@body_spec, [])
+    end
+
+    it "calls save_draft if draft was ok" do
+      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
+      subject.should_receive(:get_credentials_and_save_draft)
+      subject.approval(@body_spec, [])
+    end
+
+    it "doesn't call save draft if draft wasn't ok" do
+      subject.stub(:ask).and_return('N')
+      subject.should_not receive(:get_credentials_and_save_draft)
+      subject.approval(@body_spec, [])
+    end
+
+    it "passes in the body and the files to save_draft"do
+      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
+      subject.should_receive(:get_credentials_and_save_draft).with(@body_spec, [])
+      subject.approval(@body_spec, [])
+    end
+  end
+
+  describe "#get_credentials_and_save_draft" do
+    before do
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(63)
+      @credentials = {"user_name" => @email, "password" => @password}
+      subject.stub(:get_credentials).and_return(@credentials)
+      subject.stub(:save_draft).and_return(true)
+    end
+
+    it "calls get_credentials" do
+      subject.should_receive(:get_credentials)
+      subject.get_credentials_and_save_draft(@body_spec, [])
+    end
+
+    it "calls save_draft" do
+      subject.should_receive(:save_draft).once.with(@body_spec, [], @credentials).and_return(true)
+      subject.get_credentials_and_save_draft(@body_spec, [])
+    end
+
+    it "calls save_draft until its successful" do
+      subject.stub(:save_draft).twice.and_return(false, true)
+      subject.get_credentials_and_save_draft(@body_spec, [])
+    end
+
+    it "prints out successful message when it succeeds" do
+      subject.stub(:puts).with("Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}")
+      subject.get_credentials_and_save_draft(@body_spec, [])
+    end
+
+    it "returns true" do
+      subject.get_credentials_and_save_draft(@body_spec, []).should eq true
+    end
+  end
+
+  describe "#get_credentials" do
+    before do
+      subject.stub(:ask).and_return(@email, @password)
+    end
+    it "asks for the username" do
+      subject.should_receive(:ask).with("What is your google username?")
+      subject.get_credentials
+    end
+
+    it "asks for a password" do
+      subject.should_receive(:ask).with("What is your google password?\n").and_return(@password)
+      subject.get_credentials
+    end
+    
+    it "returns a hash of the credentials" do
+      subject.get_credentials.should eq ({"user_name" => @email, "password" => @password})
+    end
+  end
+
+  describe "#save_draft" do
+    before do
+      Mail.defaults do
+        retriever_method :imap, :address    => 'imap.gmail.com',
+                                :port       => 993,
+                                :user_name  => 'test@atomicobject.com',
+                                :password   => 'Ees5iShu',
+                                :enable_ssl => true
+      end
+      @credentials = {"user_name" => @email, "password" => @password}
+      subject.stub(:ask).and_return(@email, @date, @name_spec)
+      subject.set_draft_attributes(63)
+    end
+
+    it "it defines imap" do
+      subject.save_draft(@body_spec, [], @credentials)
+      subject.imap.should be
+    end
+
+    it "sends the draft to gmail" do
+      draft_count = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length
+      subject.save_draft(@body_spec, [], @credentials)
+      draft_count.should_not eq(Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length)
+    end
+
+    it 'has the correct email address' do
+      subject.save_draft(@body_spec, [], @credentials)
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.to.should include(@email)
+    end
+
+    it 'inserts <br> instead of /n' do
+      subject.save_draft(@body_spec, [], @credentials)
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
+    end
+
+    it "adds a file to the email if given one" do
+      subject.save_draft(@body_spec, ['./spec/spec_helper.rb'], @credentials)
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.attachments[0].filename.should eq 'spec_helper.rb'
+    end
+
+    it "doesnt add a file if there is none" do
+      subject.save_draft(@body_spec, [], @credentials)
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.attachments.length.should eq 0
+    end
+
+    it "adds all the files" do
+      subject.save_draft(@body_spec, ['./spec/spec_helper.rb', './spec/spec_helper.rb'], @credentials)
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.attachments.length.should eq 2
+    end
+    
+=begin
+    it "it defines imap" do
+      subject.stub(:ask).and_return(@email, @password)
+      subject.logging_in()
+      subject.imap.should be
+    end
+
+    it "it logs the use into google" do
+      subject.stub(:ask).and_return(@email, @password)
+      subject.logging_in()
+      subject.imap.select("[Gmail]/Drafts")
+    end
+=end
+
+  end
+=begin
   describe "#save_draft" do
     before do
       Mail.defaults do
@@ -181,38 +303,6 @@ Thanks!"
       drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
       drafts.to.should include(@email)
     end
-
-    it 'inserts <br> instead of /n' do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
-      subject.set_draft_attributes(3600 * 63)
-      subject.save_draft(@body_spec, [])
-      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-      drafts.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
-    end
-
-    it "adds a file to the email if given one" do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
-      subject.set_draft_attributes(3600 * 63)
-      subject.save_draft(@body_spec, ['./spec/spec_helper.rb'])
-      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-      drafts.attachments[0].filename.should eq 'spec_helper.rb'
-    end
-
-    it "doesnt add a file if there is none" do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
-      subject.set_draft_attributes(3600 * 63)
-      subject.save_draft(@body_spec, [])
-      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-      drafts.attachments.length.should eq 0
-    end
-
-    it "adds all the files" do
-      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
-      subject.set_draft_attributes(3600 * 63)
-      subject.save_draft(@body_spec, ['./spec/spec_helper.rb', './spec/spec_helper.rb'])
-      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-      drafts.attachments.length.should eq 2
-    end
   end
 
   describe "#logging_in" do
@@ -229,17 +319,6 @@ Thanks!"
       subject.logging_in()
     end
 
-    it "it defines imap" do
-      subject.stub(:ask).and_return(@email, @password)
-      subject.logging_in()
-      subject.imap.should be
-    end
-
-    it "it logs the use into google" do
-      subject.stub(:ask).and_return(@email, @password)
-      subject.logging_in()
-      subject.imap.select("[Gmail]/Drafts")
-    end
 
     it "calls logging_in again if the credentials are not correct" do
       subject.stub(:ask).with("What is your google username?").and_return("skjhf", @email)
@@ -248,7 +327,7 @@ Thanks!"
       subject.imap.select("[Gmail]/Drafts")
     end
   end
-
+=end
   describe "ordinalize" do
 
     it "returns 1st when it recieves 1" do
