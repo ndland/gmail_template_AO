@@ -138,7 +138,7 @@ Thanks!"
       subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
       subject.set_draft_attributes(3600 * 63)
       subject.save_draft(@body_spec, [])
-      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
       drafts.to.should include(@email)
     end
 
@@ -146,8 +146,32 @@ Thanks!"
       subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
       subject.set_draft_attributes(3600 * 63)
       subject.save_draft(@body_spec, [])
-      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts").last
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
       drafts.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
+    end
+
+    it "adds a file to the email if given one" do
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, ['./spec/spec_helper.rb'])
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.attachments[0].filename.should eq 'spec_helper.rb'
+    end
+
+    it "doesnt add a file if there is none" do
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, [])
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.attachments.length.should eq 0
+    end
+
+    it "adds all the files" do
+      subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.set_draft_attributes(3600 * 63)
+      subject.save_draft(@body_spec, ['./spec/spec_helper.rb', './spec/spec_helper.rb'])
+      drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+      drafts.attachments.length.should eq 2
     end
   end
 

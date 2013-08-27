@@ -11,7 +11,6 @@ describe DeveloperTemplate do
     @date = "2013-09-01 5:00pm"
     @deadline = " 8:00am EDT Wednesday Morning, September 4th"
     @attributes = Hash.new
-    #attributes['email'] = "test@atomicobject.com"
     @attributes['name'] = @name
     @attributes['deadline'] = @deadline 
     @body = "hi #{@name}!

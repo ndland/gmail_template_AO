@@ -2,6 +2,7 @@ require 'net/imap'
 require 'time'
 require 'highline/import'
 require 'mail'
+require 'active_support/core_ext/integer/inflections'
 
 class GmailTemplate
   attr_accessor :body, :imap
@@ -57,20 +58,6 @@ class GmailTemplate
   end
 end
 
-class Fixnum
-  def ordinalize
-    if (11..13).include?(self % 100)
-      "#{self}th"
-    else
-      case self % 10
-      when 1; "#{self}st"
-      when 2; "#{self}nd"
-      when 3; "#{self}rd"
-      else    "#{self}th"
-      end
-    end
-  end
-end
 
 # application = GmailTemplate.new
 # application.start
