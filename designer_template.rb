@@ -24,5 +24,5 @@ Thanks!"
   end
 end
 
-#template = DesignerTemplate.new
-#template.construct_draft
+template = DesignerTemplate.new
+template.construct_draft

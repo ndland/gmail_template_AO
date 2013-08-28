@@ -15,18 +15,18 @@ blah blah blah
 
 Thanks!"
   end
+
   describe "#set_draft_attributes" do
     before do
-      subject.stub(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
-      subject.stub(:ask).with("What date would you like to send this email on? YYYY-MM-DD 12:00am\n").and_return(@date)
-      subject.stub(:ask).with("What is the name of the candidate?").and_return(@name_spec)
-      subject.stub(:time_of_day).and_return("Morning")
+      subject.stub(:ask).and_return(@email, @date, @name_spec)
+      subject.stub(:set_deadline).and_return(@deadline_spec)
     end
 
     it "calls the ask function to set the email" do
       subject.should_receive(:ask).with("What is the email address you'd like to send it to?").and_return(@email)
       subject.set_draft_attributes(300)
     end
+
     it "calls the ask function to set the date" do
       subject.should_receive(:ask).with("What date would you like to send this email on? YYYY-MM-DD 12:00am\n").and_return(@date)
       subject.set_draft_attributes(3000)
@@ -112,28 +112,29 @@ Thanks!"
   end
 
   describe "#approval" do
+    before do
+      subject.stub(:ask).and_return('Y')
+    end
+
+    after do
+      subject.approval(@body_spec, [])
+    end
     it "calls ask to see if draft is ok" do
       subject.stub(:get_credentials_and_save_draft)
       subject.should_receive(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('y')
-      subject.approval(@body_spec, [])
     end
 
     it "calls save_draft if draft was ok" do
-      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
       subject.should_receive(:get_credentials_and_save_draft)
-      subject.approval(@body_spec, [])
     end
 
     it "doesn't call save draft if draft wasn't ok" do
       subject.stub(:ask).and_return('N')
       subject.should_not receive(:get_credentials_and_save_draft)
-      subject.approval(@body_spec, [])
     end
 
     it "passes in the body and the files to save_draft"do
-      subject.stub(:ask).with("#{@body_spec}\n\n Okay to send to Gmail as a draft? Y/N").and_return('Y')
       subject.should_receive(:get_credentials_and_save_draft).with(@body_spec, [])
-      subject.approval(@body_spec, [])
     end
   end
 
@@ -146,24 +147,24 @@ Thanks!"
       subject.stub(:save_draft).and_return(true)
     end
 
+    after do
+      subject.get_credentials_and_save_draft(@body_spec, [])
+    end
+
     it "calls get_credentials" do
       subject.should_receive(:get_credentials)
-      subject.get_credentials_and_save_draft(@body_spec, [])
     end
 
     it "calls save_draft" do
       subject.should_receive(:save_draft).once.with(@body_spec, [], @credentials).and_return(true)
-      subject.get_credentials_and_save_draft(@body_spec, [])
     end
 
     it "calls save_draft until its successful" do
       subject.stub(:save_draft).twice.and_return(false, true)
-      subject.get_credentials_and_save_draft(@body_spec, [])
     end
 
     it "prints out successful message when it succeeds" do
       subject.stub(:puts).with("Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}")
-      subject.get_credentials_and_save_draft(@body_spec, [])
     end
 
     it "returns true" do
@@ -175,14 +176,17 @@ Thanks!"
     before do
       subject.stub(:ask).and_return(@email, @password)
     end
+
+    after do
+      subject.get_credentials
+    end
+
     it "asks for the username" do
       subject.should_receive(:ask).with("What is your google username?")
-      subject.get_credentials
     end
 
     it "asks for a password" do
       subject.should_receive(:ask).with("What is your google password?\n").and_return(@password)
-      subject.get_credentials
     end
     
     it "returns a hash of the credentials" do
@@ -250,6 +254,11 @@ Thanks!"
         drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
         drafts.attachments.length.should eq 2
       end
+
+			it "deletes all the emails after the tests are done" do
+        Mail.find_and_delete(:mailbox =>"[Gmail]/Drafts", :count=> :all)
+			end
+
     end
   end
 
