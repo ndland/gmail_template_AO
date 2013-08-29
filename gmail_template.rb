@@ -5,7 +5,7 @@ require './deadline'
 class GmailTemplate
 	attr_accessor :draft
 	def initialize
-		@draft =Save_draft.new
+		@draft = Draft_saver.new
 	end
   def set_draft_attributes(timeframe)
     @email = ask("What is the email address you'd like to send it to?")
