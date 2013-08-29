@@ -1,5 +1,5 @@
 require './spec/spec_helper'
-require './draft'
+require './draft_saver'
 
 describe Draft_saver do
   before do

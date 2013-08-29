@@ -1,7 +1,7 @@
 require './spec/spec_helper'
-require './gmail_template'
+require './challenge_cli'
 
-describe GmailTemplate do
+describe ChallengeCli do
   before do
     @email = "test@atomicobject.com"
     @password = 'Ees5iShu'

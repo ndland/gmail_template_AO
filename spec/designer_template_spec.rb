@@ -30,7 +30,7 @@ Thanks!"
     end
 
     it "creates a new instance of the GmailTemplate class" do
-      subject.template.should be_an_instance_of GmailTemplate
+      subject.template.should be_an_instance_of ChallengeCli
     end
 
     describe "#construct_draft" do

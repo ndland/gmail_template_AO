@@ -1,8 +1,8 @@
 require 'highline/import'
-require './draft'
+require './draft_saver'
 require './deadline'
 
-class GmailTemplate
+class ChallengeCli
 	attr_accessor :draft
 	def initialize
 		@draft = Draft_saver.new
