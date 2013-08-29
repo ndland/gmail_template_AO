@@ -3,12 +3,10 @@ require './draft'
 require './deadline'
 
 class GmailTemplate
-  attr_accessor :draft
-
-  def initialize
-		@draft = Draft.new
+	attr_accessor :draft
+	def initialize
+		@draft =Save_draft.new
 	end
-	# cli
   def set_draft_attributes(timeframe)
     @email = ask("What is the email address you'd like to send it to?")
     @date = ask("What date would you like to send this email on? YYYY-MM-DD 12:00am\n")
@@ -17,7 +15,6 @@ class GmailTemplate
     return { "name" => name, "deadline" => deadline.value }
   end
 
-	# cli
   def approval(body, files)
     decision = ask("#{body}\n\n Okay to send to Gmail as a draft? Y/N")
     if decision.upcase == 'Y'
@@ -25,11 +22,10 @@ class GmailTemplate
     end
   end
 
-	# cli
   def get_credentials_and_save_draft(body, files)
     credentials = get_credentials
-    successful = @draft.save_draft(body, files, @email, credentials)
-    if successful
+		@draft.save_draft(body, files, @email, credentials)
+    if @draft.successful
       puts "Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}"
       return true
     else
@@ -37,7 +33,6 @@ class GmailTemplate
     end
   end
 
-	# cli 
   def get_credentials
     user_name = ask("What is your google username?")
     password = ask("What is your google password?\n") { |input| input.echo = "*" }

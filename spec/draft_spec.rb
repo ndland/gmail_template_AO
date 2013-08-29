@@ -1,7 +1,7 @@
 require './spec/spec_helper'
 require './draft'
 
-describe Draft do
+describe Save_draft do
   before do
     @email = "test@atomicobject.com"
     @password = 'Ees5iShu'

@@ -1,9 +1,19 @@
 require 'net/imap'
 require 'time'
 require 'mail'
-class Draft
-  attr_accessor :imap
-	# mail
+class Save_draft
+  attr_accessor :imap, :successful
+# 
+# 	def initialize(body, files, email, credentials)
+#     mail = format_draft(body, files, email)
+#     @imap = Net::IMAP.new('imap.gmail.com', 993, true, nil, false)
+#     @imap.login(credentials["user_name"], credentials["password"])
+#     @imap.append("[Gmail]/Drafts", mail, [:Draft], Time.now)
+#     @successful = true
+#   rescue Net::IMAP::NoResponseError
+#     @successful = false
+# 	end
+# 
   def format_draft(body, files, email)
     body.gsub!(/\n/,'<br>')
     mail = Mail.new do
@@ -19,14 +29,13 @@ class Draft
     return mail.to_s
   end
 
-	# mail
   def save_draft(body, files, email, credentials)
     mail = format_draft(body, files, email)
     @imap = Net::IMAP.new('imap.gmail.com', 993, true, nil, false)
     @imap.login(credentials["user_name"], credentials["password"])
     @imap.append("[Gmail]/Drafts", mail, [:Draft], Time.now)
-    return true
+    @successful = true
   rescue Net::IMAP::NoResponseError
-    return false
+    @successful = false
   end
 end

@@ -83,7 +83,8 @@ Thanks!"
       subject.set_draft_attributes(63)
       @credentials = {"user_name" => @email, "password" => @password}
       subject.stub(:get_credentials).and_return(@credentials)
-      subject.draft.stub(:save_draft).and_return(true)
+			subject.draft.stub(:save_draft)
+			subject.draft.stub(:successful).and_return(true)
     end
 
     after do
@@ -95,11 +96,12 @@ Thanks!"
     end
 
     it "calls save_draft" do
-      subject.draft.should_receive(:save_draft).once.with(@body_spec, [], @email, @credentials).and_return(true)
+      subject.draft.should_receive(:save_draft).once.with(@body_spec, [], @email, @credentials)
     end
 
     it "calls save_draft until its successful" do
-      subject.draft.stub(:save_draft).twice.and_return(false, true)
+			subject.draft.stub(:successful).and_return(false, true)
+      subject.draft.should_receive(:save_draft).twice.with(@body_spec, [], @email, @credentials)
     end
 
     it "prints out successful message when it succeeds" do
