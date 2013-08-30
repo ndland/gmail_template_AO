@@ -10,7 +10,6 @@ class DeveloperTemplate
     @files = []
     @timeFrame = 63
   end
-  
 
   def construct_draft
     until @approved

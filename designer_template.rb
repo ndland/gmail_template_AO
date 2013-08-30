@@ -3,6 +3,7 @@ require './gmail_template'
 class DesignerTemplate
 
   attr_accessor :template, :designer_template
+
   def initialize
     @template = GmailTemplate.new
     @approved = false
