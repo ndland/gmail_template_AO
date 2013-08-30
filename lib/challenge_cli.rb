@@ -1,6 +1,6 @@
 require 'highline/import'
-require './draft_saver'
-require './deadline'
+require './lib/draft_saver'
+require './lib/deadline'
 
 class ChallengeCli
   attr_accessor :draft

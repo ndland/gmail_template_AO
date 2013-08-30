@@ -1,5 +1,5 @@
-require './spec/spec_helper'
-require './deadline'
+require './lib/spec/spec_helper'
+require './lib/deadline'
 
 describe Deadline do
   describe "#set_deadline" do

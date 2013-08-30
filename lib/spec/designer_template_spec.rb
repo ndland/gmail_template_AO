@@ -1,4 +1,4 @@
-require './spec/spec_helper'
+require './lib/spec/spec_helper'
 require './designer_template'
 
 describe DesignerTemplate do
@@ -12,7 +12,7 @@ describe DesignerTemplate do
     @deadline = " 8:00am EDT Wednesday Morning, September 4th"
     @attributes = Hash.new
     @attributes['name'] = @name
-    @attributes['deadline'] = @deadline 
+    @attributes['deadline'] = @deadline
     @body = "Hi #{@name}!
 
 Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
@@ -77,7 +77,7 @@ Thanks!"
 
       it "calls the approval method with two parameters" do
           subject.template.stub(:set_draft_attributes).and_return(@attributes)
-          subject.template.should_receive(:approval).once.with(@body, ['./spec/spec_helper.rb']).and_return(true)
+          subject.template.should_receive(:approval).once.with(@body, ['./lib/spec/spec_helper.rb']).and_return(true)
           subject.construct_draft
       end
 

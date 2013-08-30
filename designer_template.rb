@@ -1,4 +1,4 @@
-require './challenge_cli'
+require './lib/challenge_cli'
 
 class DesignerTemplate
 
@@ -7,7 +7,7 @@ class DesignerTemplate
   def initialize
     @template = ChallengeCli.new
     @approved = false
-    @files = ['./spec/spec_helper.rb']
+    @files = ['./lib/spec/spec_helper.rb']
     @timeFrame = 63
   end
 
@@ -25,5 +25,5 @@ Thanks!"
   end
 end
 
-template = DesignerTemplate.new
-template.construct_draft
+# template = DesignerTemplate.new
+# template.construct_draft

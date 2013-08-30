@@ -1,5 +1,5 @@
-require './spec/spec_helper'
-require './challenge_cli'
+require './lib/spec/spec_helper'
+require './lib/challenge_cli'
 
 describe ChallengeCli do
   before do

@@ -1,5 +1,5 @@
-require './spec/spec_helper'
-require './draft_saver'
+require './lib/spec/spec_helper'
+require './lib/draft_saver'
 
 describe Draft_saver do
   before do
@@ -57,7 +57,7 @@ Thanks!"
       end
 
       it "adds a file to the email if given one" do
-        subject.save_draft(@body_spec, ['./spec/spec_helper.rb'], @email, @credentials)
+        subject.save_draft(@body_spec, ['./lib/spec/spec_helper.rb'], @email, @credentials)
         drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
         drafts.attachments[0].filename.should eq 'spec_helper.rb'
       end
@@ -69,7 +69,7 @@ Thanks!"
       end
 
       it "adds all the files" do
-        subject.save_draft(@body_spec, ['./spec/spec_helper.rb', './spec/spec_helper.rb'], @email, @credentials)
+        subject.save_draft(@body_spec, ['./lib/spec/spec_helper.rb', './lib/spec/spec_helper.rb'], @email, @credentials)
         drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
         drafts.attachments.length.should eq 2
       end

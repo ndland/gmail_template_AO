@@ -1,4 +1,4 @@
-require './spec/spec_helper'
+require './lib/spec/spec_helper'
 require './developer_template'
 
 describe DeveloperTemplate do
