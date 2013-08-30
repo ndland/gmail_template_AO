@@ -1,11 +1,11 @@
-require './gmail_template'
+require './challenge_cli'
 
 class DeveloperTemplate
 
   attr_accessor :template, :developer_template
 
   def initialize
-    @template = GmailTemplate.new
+    @template = ChallengeCli.new
     @approved = false
     @files = []
     @timeFrame = 63
