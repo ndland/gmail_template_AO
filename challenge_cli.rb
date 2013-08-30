@@ -3,10 +3,12 @@ require './draft_saver'
 require './deadline'
 
 class ChallengeCli
-	attr_accessor :draft
-	def initialize
-		@draft = Draft_saver.new
-	end
+  attr_accessor :draft
+
+  def initialize
+    @draft = Draft_saver.new
+  end
+
   def set_draft_attributes(timeframe)
     @email = ask("What is the email address you'd like to send it to?")
     @date = ask("What date would you like to send this email on? YYYY-MM-DD 12:00am\n")
@@ -24,7 +26,7 @@ class ChallengeCli
 
   def get_credentials_and_save_draft(body, files)
     credentials = get_credentials
-		@draft.save_draft(body, files, @email, credentials)
+    @draft.save_draft(body, files, @email, credentials)
     if @draft.successful
       puts "Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}"
       return true
