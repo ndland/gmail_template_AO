@@ -27,7 +27,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  active_support
-  highline
-  mail
-  rspec
+  active_support (= 3.0.0)
+  highline (= 1.6.19)
+  mail (= 2.5.4)
+  rspec (= 2.14.1)

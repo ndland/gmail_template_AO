@@ -1,0 +1,23 @@
+# gmail_template.gems generated gem export file. Note that any env variable settings will be missing. Append these after using a ';' field separator
+
+active_support -v3.0.0
+activesupport -v3.0.0
+bigdecimal -v1.2.0
+diff-lcs -v1.2.4
+highline -v1.6.19
+io-console -v0.4.2
+json -v1.7.7
+mail -v2.5.4
+mime-types -v1.25
+mime-types -v1.24
+minitest -v4.3.2
+polyglot -v0.3.3
+psych -v2.0.0
+rake -v0.9.6
+rdoc -v4.0.0
+rspec -v2.14.1
+rspec-core -v2.14.5
+rspec-expectations -v2.14.2
+rspec-mocks -v2.14.3
+test-unit -v2.0.0.0
+treetop -v1.4.15

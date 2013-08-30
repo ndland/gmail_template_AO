@@ -1,8 +1,8 @@
 # A sample Gemfile
 source "https://rubygems.org"
-gem 'rspec', :require => 'spec'
-gem 'highline'
-gem 'mail'
-gem 'active_support'
+gem 'rspec', '2.14.1', :require => 'spec'
+gem 'highline', '1.6.19'
+gem 'mail', '2.5.4'
+gem 'active_support', '3.0.0'
 
 # gem "rails"
