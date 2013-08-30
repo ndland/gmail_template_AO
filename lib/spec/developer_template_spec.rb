@@ -12,7 +12,8 @@ describe DeveloperTemplate do
     @deadline = " 8:00am EDT Wednesday Morning, September 4th"
     @attributes = Hash.new
     @attributes['name'] = @name
-    @attributes['deadline'] = @deadline 
+    @attributes['deadline'] = @deadline
+    @subject = "developer challenge"
     @body = "Hi #{@name}!
 
 Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
@@ -74,9 +75,9 @@ Thanks!"
           subject.construct_draft
       end
 
-      it "calls the approval method with two parameters" do
+      it "calls the approval method with three parameters" do
           subject.template.stub(:set_draft_attributes).and_return(@attributes)
-          subject.template.should_receive(:approval).once.with(@body, []).and_return(true)
+          subject.template.should_receive(:approval).once.with(@body, @subject, []).and_return(true)
           subject.construct_draft
       end
     end

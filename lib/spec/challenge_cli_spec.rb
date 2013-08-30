@@ -8,6 +8,7 @@ describe ChallengeCli do
     @name_spec = "Test"
     @date = "2013-09-01 5:00pm"
     @deadline_spec = "8:00am EDT Wednesday Morning, September 4th"
+    @subject = "designer challenge"
     @body_spec = "hi #{@name_spec}!
 
 Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}
@@ -56,7 +57,7 @@ Thanks!"
     end
 
     after do
-      subject.approval(@body_spec, [])
+      subject.approval(@body_spec, @subject, [])
     end
     it "calls ask to see if draft is ok" do
       subject.stub(:get_credentials_and_save_draft)
@@ -73,22 +74,23 @@ Thanks!"
     end
 
     it "passes in the body and the files to save_draft"do
-      subject.should_receive(:get_credentials_and_save_draft).with(@body_spec, [])
+      subject.should_receive(:get_credentials_and_save_draft).with(@body_spec, @subject, [])
     end
   end
 
   describe "#get_credentials_and_save_draft" do
     before do
       subject.stub(:ask).and_return(@email, @date, @name_spec, @email, @password)
+      subject.stub(:puts)
       subject.set_draft_attributes(63)
       @credentials = {"user_name" => @email, "password" => @password}
       subject.stub(:get_credentials).and_return(@credentials)
-			subject.draft.stub(:save_draft)
-			subject.draft.stub(:successful).and_return(true)
+      subject.draft.stub(:save_draft)
+      subject.draft.stub(:successful).and_return(true)
     end
 
     after do
-      subject.get_credentials_and_save_draft(@body_spec, [])
+      subject.get_credentials_and_save_draft(@body_spec, @subject, [])
     end
 
     it "calls get_credentials" do
@@ -96,12 +98,12 @@ Thanks!"
     end
 
     it "calls save_draft" do
-      subject.draft.should_receive(:save_draft).once.with(@body_spec, [], @email, @credentials)
+      subject.draft.should_receive(:save_draft).once.with(@body_spec, @subject, [], @email, @credentials)
     end
 
     it "calls save_draft until its successful" do
 			subject.draft.stub(:successful).and_return(false, true)
-      subject.draft.should_receive(:save_draft).twice.with(@body_spec, [], @email, @credentials)
+      subject.draft.should_receive(:save_draft).twice.with(@body_spec, @subject, [], @email, @credentials)
     end
 
     it "prints out successful message when it succeeds" do
@@ -109,7 +111,7 @@ Thanks!"
     end
 
     it "returns true" do
-      subject.get_credentials_and_save_draft(@body_spec, []).should eq true
+      subject.get_credentials_and_save_draft(@body_spec, @subject, []).should eq true
     end
   end
 
@@ -129,7 +131,7 @@ Thanks!"
     it "asks for a password" do
       subject.should_receive(:ask).with("What is your google password?\n").and_return(@password)
     end
-    
+
     it "returns a hash of the credentials" do
       subject.get_credentials.should eq ({"user_name" => @email, "password" => @password})
     end

@@ -13,6 +13,7 @@ describe DesignerTemplate do
     @attributes = Hash.new
     @attributes['name'] = @name
     @attributes['deadline'] = @deadline
+    @subject = "designers challenge"
     @body = "Hi #{@name}!
 
 Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by #{@deadline}
@@ -75,9 +76,9 @@ Thanks!"
           subject.construct_draft
       end
 
-      it "calls the approval method with two parameters" do
+      it "calls the approval method with three parameters" do
           subject.template.stub(:set_draft_attributes).and_return(@attributes)
-          subject.template.should_receive(:approval).once.with(@body, ['./lib/spec/spec_helper.rb']).and_return(true)
+          subject.template.should_receive(:approval).once.with(@body, @subject, ['./lib/spec/spec_helper.rb']).and_return(true)
           subject.construct_draft
       end
 

@@ -8,6 +8,8 @@ describe Draft_saver do
     @name_spec = "Test"
     @date = "2013-09-01 5:00pm"
     @deadline_spec = "8:00am EDT Wednesday Morning, September 4th"
+    @designer = "designer challenge"
+    @developer = "developer challenge"
     @body_spec = "hi #{@name_spec}!
 
 Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}
@@ -28,55 +30,68 @@ Thanks!"
     end
 
     it "it defines imap" do
-      subject.save_draft(@body_spec, [], @email, @credentials)
+      subject.save_draft(@body_spec, @designer, [], @email, @credentials)
       subject.imap.should be
     end
 
     it "it logs the user into google" do
-      subject.save_draft(@body_spec, [], @email, @credentials)
+      subject.save_draft(@body_spec, @designer, [], @email, @credentials)
       subject.imap.select("[Gmail]/Drafts")
     end
 
     it "sends the draft to gmail" do
       draft_count = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length
-      subject.save_draft(@body_spec, [], @email, @credentials)
+      subject.save_draft(@body_spec, @designer, [], @email, @credentials)
       draft_count.should_not eq(Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).length)
     end
 
     describe "#format_draft" do
       it 'has the correct email address' do
-        subject.save_draft(@body_spec, [], @email, @credentials)
-        drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-        drafts.to.should include(@email)
+        subject.save_draft(@body_spec, @designer, [], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.to.should include(@email)
       end
 
       it 'inserts <br> instead of /n' do
-        subject.save_draft(@body_spec, [], @email, @credentials)
-        drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-        drafts.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
+        subject.save_draft(@body_spec, @designer, [], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.body.decoded.should include("hi #{@name_spec}!<br><br>Complete the problem presented in this...your resulting project should be sent to us at <a href =\"mailto: detroit.jobs@atomicobject.com\">detroit.jobs@atomicobject.com</a> by#{@deadline_spec}<br>blah blah blah<br><br>Thanks!")
       end
 
       it "adds a file to the email if given one" do
-        subject.save_draft(@body_spec, ['./lib/spec/spec_helper.rb'], @email, @credentials)
-        drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-        drafts.attachments[0].filename.should eq 'spec_helper.rb'
+        subject.save_draft(@body_spec, @designer, ['./lib/spec/spec_helper.rb'], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.attachments[0].filename.should eq 'spec_helper.rb'
       end
 
       it "doesnt add a file if there is none" do
-        subject.save_draft(@body_spec, [], @email, @credentials)
-        drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-        drafts.attachments.length.should eq 0
+        subject.save_draft(@body_spec, @designer, [], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.attachments.length.should eq 0
       end
 
       it "adds all the files" do
-        subject.save_draft(@body_spec, ['./lib/spec/spec_helper.rb', './lib/spec/spec_helper.rb'], @email, @credentials)
-        drafts = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
-        drafts.attachments.length.should eq 2
+        subject.save_draft(@body_spec, @designer, ['./lib/spec/spec_helper.rb', './lib/spec/spec_helper.rb'], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.attachments.length.should eq 2
       end
 
-			it "deletes all the emails after the tests are done" do
+      it "adds the subject to the email" do
+        subject.save_draft(@body_spec, @designer, ['./lib/spec/spec_helper.rb', './lib/spec/spec_helper.rb'], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.subject.should include(@designer)
+      end
+
+      it "adds the subject to the email dynamically" do
+        subject.save_draft(@body_spec, @developer, ['./lib/spec/spec_helper.rb', './lib/spec/spec_helper.rb'], @email, @credentials)
+        draft = Mail.find(:mailbox =>"[Gmail]/Drafts", :count=> :all).last
+        draft.subject.should include(@developer)
+      end
+
+      it "deletes all the emails after the tests are done" do
+        sleep 0.2 #google complains too many accesses to gmail
         Mail.find_and_delete(:mailbox =>"[Gmail]/Drafts", :count=> :all)
-			end
+      end
 
     end
   end

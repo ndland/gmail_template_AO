@@ -17,21 +17,21 @@ class ChallengeCli
     return { "name" => name, "deadline" => deadline.value }
   end
 
-  def approval(body, files)
+  def approval(body, subject, files)
     decision = ask("#{body}\n\n Okay to send to Gmail as a draft? Y/N")
     if decision.upcase == 'Y'
-      get_credentials_and_save_draft(body, files)
+      get_credentials_and_save_draft(body, subject, files)
     end
   end
 
-  def get_credentials_and_save_draft(body, files)
+  def get_credentials_and_save_draft(body, subject, files)
     credentials = get_credentials
-    @draft.save_draft(body, files, @email, credentials)
+    @draft.save_draft(body, subject, files, @email, credentials)
     if @draft.successful
       puts "Draft successfully created. Please schedule to be sent at #{@date} " + "#{Time.parse(@date).zone}"
       return true
     else
-      get_credentials_and_save_draft(body, files)
+      get_credentials_and_save_draft(body, subject, files)
     end
   end
 
